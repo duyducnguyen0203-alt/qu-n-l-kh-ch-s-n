@@ -1,0 +1,1045 @@
+
+
+Quan ly khach san · HTML
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelia — Quản lý khách sạn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14212c;
+    --ink-2:#1c2e3c;
+    --ink-3:#25394a;
+    --paper:#f5f0e6;
+    --paper-dim:#cfc9ba;
+    --brass:#c69a54;
+    --brass-bright:#e0b56d;
+    --brass-dim:#8c6b36;
+    --sage:#7ea089;
+    --rose:#c07268;
+    --muted:#8494a3;
+    --radius:2px;
+    --shadow: 0 12px 40px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    margin:0;
+    letter-spacing:.2px;
+  }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+  a{ color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+  ::selection{ background:var(--brass); color:var(--ink); }
+  :focus-visible{ outline:2px solid var(--brass-bright); outline-offset:2px; }
+ 
+  /* ---------- layout shells ---------- */
+  [data-app-view]{ display:none; }
+  [data-app-view].active{ display:block; }
+ 
+  .topnav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 40px;
+    background:rgba(20,33,44,.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(198,154,84,.18);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-mark{
+    width:30px; height:30px; border:1px solid var(--brass);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-size:15px; color:var(--brass-bright);
+  }
+  .brand-name{ font-family:'Fraunces',serif; font-size:19px; letter-spacing:.5px; }
+  .brand-name em{ font-style:normal; color:var(--brass-bright); }
+  .navlinks{ display:flex; gap:6px; align-items:center; }
+  .navlinks button{
+    background:none; border:none; color:var(--muted);
+    font-size:14px; padding:8px 16px; border-radius:20px;
+    transition:.2s;
+  }
+  .navlinks button:hover{ color:var(--paper); }
+  .navlinks button.active{ color:var(--ink); background:var(--brass); }
+ 
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 40px; }
+  .section-pad{ padding:64px 0; }
+ 
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 22px; border-radius:2px; border:1px solid transparent;
+    font-size:14px; font-weight:600; letter-spacing:.3px; transition:.2s;
+  }
+  .btn-brass{ background:var(--brass); color:var(--ink); }
+  .btn-brass:hover{ background:var(--brass-bright); }
+  .btn-ghost{ background:transparent; border-color:rgba(245,240,230,.25); color:var(--paper); }
+  .btn-ghost:hover{ border-color:var(--brass); color:var(--brass-bright); }
+  .btn-sm{ padding:7px 14px; font-size:12.5px; }
+  .btn-danger{ background:transparent; border-color:rgba(192,114,104,.5); color:var(--rose); }
+  .btn-danger:hover{ background:rgba(192,114,104,.12); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+ 
+  /* ---------- guest hero ---------- */
+  .hero{
+    position:relative; padding:96px 40px 80px; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 15% 20%, rgba(198,154,84,.14), transparent 55%),
+      radial-gradient(ellipse at 85% 80%, rgba(126,160,137,.10), transparent 55%);
+    border-bottom:1px solid rgba(198,154,84,.15);
+  }
+  .hero-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:3px;
+    text-transform:uppercase; color:var(--brass-bright); margin-bottom:18px;
+  }
+  .hero h1{ font-size:56px; line-height:1.05; max-width:680px; }
+  .hero p{ max-width:520px; color:var(--paper-dim); font-size:16px; line-height:1.6; margin-top:18px; }
+  .hero-actions{ display:flex; gap:14px; margin-top:34px; }
+  .hero-stats{ display:flex; gap:48px; margin-top:64px; }
+  .hero-stat b{ display:block; font-family:'Fraunces',serif; font-size:30px; color:var(--brass-bright); }
+  .hero-stat span{ font-size:12.5px; color:var(--muted); letter-spacing:.3px; }
+ 
+  /* ---------- room grid ---------- */
+  .section-head{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
+  .section-head h2{ font-size:30px; }
+  .filters{ display:flex; gap:8px; flex-wrap:wrap; }
+  .filters select{
+    background:var(--ink-2); border:1px solid rgba(245,240,230,.15); color:var(--paper);
+    padding:9px 12px; border-radius:2px; font-size:13px; font-family:inherit;
+  }
+  .room-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:22px; }
+  .room-card{
+    background:var(--ink-2); border:1px solid rgba(245,240,230,.08);
+    border-radius:2px; overflow:hidden; transition:.25s; display:flex; flex-direction:column;
+  }
+  .room-card:hover{ border-color:rgba(198,154,84,.4); transform:translateY(-3px); }
+  .room-visual{
+    height:120px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-size:13px; letter-spacing:2px; color:rgba(245,240,230,.5);
+  }
+  .room-body{ padding:20px; display:flex; flex-direction:column; gap:12px; flex:1; }
+  .room-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .room-num{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); }
+  .room-type{ font-family:'Fraunces',serif; font-size:19px; margin-top:2px; }
+  .status-pill{
+    font-size:10.5px; letter-spacing:.5px; text-transform:uppercase; padding:4px 9px;
+    border-radius:20px; font-weight:600; white-space:nowrap;
+  }
+  .status-trong{ background:rgba(126,160,137,.16); color:var(--sage); }
+  .status-dang_o{ background:rgba(192,114,104,.16); color:var(--rose); }
+  .status-bao_tri{ background:rgba(132,148,163,.2); color:var(--muted); }
+  .room-desc{ font-size:13px; color:var(--paper-dim); line-height:1.5; flex:1; }
+  .room-meta{ display:flex; gap:14px; font-size:12px; color:var(--muted); }
+  .room-price{ font-family:'IBM Plex Mono',monospace; font-size:20px; color:var(--brass-bright); }
+  .room-price span{ font-size:11px; color:var(--muted); font-family:'Inter',sans-serif; }
+  .room-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+ 
+  /* ---------- lookup panel ---------- */
+  .panel{
+    background:var(--ink-2); border:1px solid rgba(245,240,230,.08);
+    border-radius:2px; padding:32px;
+  }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12.5px; color:var(--muted); margin-bottom:7px; letter-spacing:.2px; }
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--ink); border:1px solid rgba(245,240,230,.15);
+    color:var(--paper); padding:11px 13px; border-radius:2px; font-size:14px; font-family:inherit;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--brass); }
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+ 
+  footer{ border-top:1px solid rgba(198,154,84,.15); padding:30px 40px; color:var(--muted); font-size:12.5px; display:flex; justify-content:space-between; }
+ 
+  /* ---------- modal ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(10,16,22,.7); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:200; padding:20px;
+  }
+  .modal-backdrop.active{ display:flex; }
+  .modal{
+    background:var(--ink-2); border:1px solid rgba(198,154,84,.25);
+    max-width:520px; width:100%; max-height:88vh; overflow-y:auto;
+    border-radius:2px; box-shadow:var(--shadow); position:relative;
+  }
+  .modal-head{ padding:24px 28px; border-bottom:1px solid rgba(245,240,230,.08); display:flex; justify-content:space-between; align-items:center; }
+  .modal-body{ padding:28px; }
+  .modal-close{ background:none; border:none; color:var(--muted); font-size:22px; line-height:1; padding:4px; }
+  .modal-close:hover{ color:var(--paper); }
+ 
+  /* ---------- ledger / seal (signature element) ---------- */
+  .ledger{
+    border:1px dashed rgba(198,154,84,.5); border-radius:2px; padding:26px;
+    background:
+      repeating-linear-gradient(135deg, rgba(198,154,84,.03) 0 2px, transparent 2px 14px);
+    position:relative;
+  }
+  .ledger-row{ display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(245,240,230,.08); font-size:13.5px; }
+  .ledger-row:last-child{ border-bottom:none; }
+  .ledger-row span:first-child{ color:var(--muted); }
+  .ledger-row span:last-child{ font-family:'IBM Plex Mono',monospace; }
+  .seal{
+    width:74px; height:74px; border-radius:50%; border:2px solid var(--brass);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 18px;
+    font-family:'Fraunces',serif; color:var(--brass-bright); font-size:11px; letter-spacing:1px;
+    text-align:center; position:relative;
+    animation:sealIn .5s cubic-bezier(.2,1.6,.4,1);
+  }
+  .seal::before{
+    content:''; position:absolute; inset:-6px; border:1px solid rgba(198,154,84,.35); border-radius:50%;
+  }
+  @keyframes sealIn{
+    0%{ transform:scale(.3) rotate(-25deg); opacity:0; }
+    100%{ transform:scale(1) rotate(0deg); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce){ .seal{ animation:none; } }
+  .code-display{
+    text-align:center; font-family:'IBM Plex Mono',monospace; font-size:22px;
+    letter-spacing:3px; color:var(--brass-bright); margin:14px 0 4px;
+  }
+  .hint{ font-size:12px; color:var(--muted); text-align:center; }
+ 
+  /* ---------- admin shell ---------- */
+  .admin-shell{ display:flex; min-height:100vh; }
+  .admin-side{
+    width:230px; flex-shrink:0; background:var(--ink-2); border-right:1px solid rgba(245,240,230,.08);
+    padding:26px 0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+  }
+  .admin-side .brand{ padding:0 24px 26px; border-bottom:1px solid rgba(245,240,230,.08); margin-bottom:18px; }
+  .admin-nav-item{
+    display:flex; align-items:center; gap:11px; padding:12px 24px; font-size:14px; color:var(--muted);
+    border-left:2px solid transparent; transition:.15s; background:none; border-top:none; border-right:none; border-bottom:none; width:100%; text-align:left;
+  }
+  .admin-nav-item:hover{ color:var(--paper); }
+  .admin-nav-item.active{ color:var(--brass-bright); border-left-color:var(--brass); background:rgba(198,154,84,.06); }
+  .admin-main{ flex:1; padding:36px 44px; min-width:0; }
+  .admin-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
+  .admin-header h2{ font-size:26px; }
+  .logout-link{ font-size:12.5px; color:var(--muted); background:none; border:none; }
+  .logout-link:hover{ color:var(--rose); }
+ 
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:36px; }
+  .stat-card{ background:var(--ink-2); border:1px solid rgba(245,240,230,.08); padding:20px 22px; border-radius:2px; }
+  .stat-card b{ display:block; font-family:'IBM Plex Mono',monospace; font-size:28px; color:var(--brass-bright); margin-bottom:6px; }
+  .stat-card span{ font-size:12.5px; color:var(--muted); }
+ 
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  th{ text-align:left; padding:11px 14px; color:var(--muted); font-weight:500; font-size:12px; letter-spacing:.3px; text-transform:uppercase; border-bottom:1px solid rgba(245,240,230,.12); }
+  td{ padding:13px 14px; border-bottom:1px solid rgba(245,240,230,.06); vertical-align:middle; }
+  tr:last-child td{ border-bottom:none; }
+  .table-wrap{ background:var(--ink-2); border:1px solid rgba(245,240,230,.08); border-radius:2px; overflow:hidden; overflow-x:auto; }
+  .table-toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:14px; flex-wrap:wrap; }
+  .tag{ font-size:11px; padding:3px 9px; border-radius:20px; letter-spacing:.3px; text-transform:uppercase; font-weight:600; }
+  .tag-cho{ background:rgba(198,154,84,.16); color:var(--brass-bright); }
+  .tag-xacnhan{ background:rgba(126,160,137,.16); color:var(--sage); }
+  .tag-checkin{ background:rgba(126,160,137,.28); color:var(--sage); }
+  .tag-checkout{ background:rgba(132,148,163,.2); color:var(--muted); }
+  .tag-huy{ background:rgba(192,114,104,.16); color:var(--rose); }
+  .tag-paid{ background:rgba(126,160,137,.16); color:var(--sage); }
+  .tag-unpaid{ background:rgba(192,114,104,.16); color:var(--rose); }
+  .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .icon-btn{ background:none; border:1px solid rgba(245,240,230,.15); color:var(--paper-dim); padding:6px 10px; border-radius:2px; font-size:12px; }
+  .icon-btn:hover{ border-color:var(--brass); color:var(--brass-bright); }
+  .empty-state{ padding:50px 20px; text-align:center; color:var(--muted); }
+  .empty-state b{ display:block; color:var(--paper-dim); font-family:'Fraunces',serif; font-size:18px; margin-bottom:6px; }
+ 
+  .login-shell{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-card{ width:100%; max-width:380px; background:var(--ink-2); border:1px solid rgba(198,154,84,.25); border-radius:2px; padding:40px; }
+  .login-card .brand{ justify-content:center; margin-bottom:8px; }
+  .login-card p.hint{ margin-bottom:26px; }
+  .toast{
+    position:fixed; bottom:26px; right:26px; background:var(--ink-2); border:1px solid var(--brass);
+    color:var(--paper); padding:14px 20px; border-radius:2px; font-size:13.5px; box-shadow:var(--shadow);
+    z-index:300; opacity:0; transform:translateY(10px); transition:.25s; pointer-events:none;
+  }
+  .toast.show{ opacity:1; transform:translateY(0); }
+ 
+  @media(max-width:760px){
+    .topnav{ padding:14px 18px; flex-wrap:wrap; gap:10px; }
+    .wrap{ padding:0 18px; }
+    .hero{ padding:56px 18px 56px; }
+    .hero h1{ font-size:36px; }
+    .hero-stats{ gap:28px; }
+    .admin-shell{ flex-direction:column; }
+    .admin-side{ width:100%; height:auto; position:relative; flex-direction:row; overflow-x:auto; padding:14px; }
+    .admin-side .brand{ display:none; }
+    .admin-nav-item{ border-left:none; border-bottom:2px solid transparent; padding:10px 16px; white-space:nowrap; }
+    .admin-nav-item.active{ border-bottom-color:var(--brass); }
+    .admin-main{ padding:24px 18px; }
+    .field-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+ 
+<div id="toast" class="toast"></div>
+ 
+<!-- ============ GUEST VIEW ============ -->
+<div data-app-view="guest" class="active">
+  <nav class="topnav">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-name">AUR<em>ELIA</em></div>
+    </div>
+    <div class="navlinks" id="guestNav">
+      <button data-goto="guest-home" class="active">Trang chủ</button>
+      <button data-goto="guest-rooms">Phòng</button>
+      <button data-goto="guest-lookup">Đặt phòng của tôi</button>
+      <button data-goto="admin-gate">Quản trị</button>
+    </div>
+  </nav>
+ 
+  <section id="guest-home">
+    <div class="hero">
+      <div class="hero-eyebrow">Khách sạn Aurelia — Since 1998</div>
+      <h1>Một chốn nghỉ yên tĩnh,<br>giữa lòng phố thị.</h1>
+      <p>Đặt phòng trực tiếp, không qua trung gian. Xem tình trạng phòng theo thời gian thực và nhận mã đặt phòng ngay lập tức.</p>
+      <div class="hero-actions">
+        <button class="btn btn-brass" data-goto="guest-rooms">Xem phòng trống</button>
+        <button class="btn btn-ghost" data-goto="guest-lookup">Tra cứu đặt phòng</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="statTotalRooms">—</b><span>TỔNG SỐ PHÒNG</span></div>
+        <div class="hero-stat"><b id="statAvailRooms">—</b><span>PHÒNG CÒN TRỐNG</span></div>
+        <div class="hero-stat"><b id="statRoomTypes">—</b><span>HẠNG PHÒNG</span></div>
+      </div>
+    </div>
+  </section>
+ 
+  <section id="guest-rooms" class="wrap section-pad">
+    <div class="section-head">
+      <h2>Danh sách phòng</h2>
+      <div class="filters">
+        <select id="filterType"><option value="">Tất cả hạng phòng</option></select>
+        <select id="filterStatus">
+          <option value="">Tất cả trạng thái</option>
+          <option value="trong">Còn trống</option>
+          <option value="dang_o">Đang có khách</option>
+          <option value="bao_tri">Đang bảo trì</option>
+        </select>
+      </div>
+    </div>
+    <div class="room-grid" id="roomGrid"></div>
+  </section>
+ 
+  <section id="guest-lookup" class="wrap section-pad" style="max-width:600px;">
+    <div class="section-head"><h2>Tra cứu đặt phòng</h2></div>
+    <div class="panel">
+      <div class="field"><label>Mã đặt phòng</label><input id="lookupCode" placeholder="VD: BK1001" class="mono"></div>
+      <div class="field"><label>Số điện thoại đã đặt</label><input id="lookupPhone" placeholder="Số điện thoại"></div>
+      <button class="btn btn-brass" id="lookupBtn" style="width:100%;justify-content:center;">Tra cứu</button>
+      <div id="lookupResult" style="margin-top:22px;"></div>
+    </div>
+  </section>
+ 
+  <footer>
+    <span>© Khách sạn Aurelia</span>
+    <span class="mono">Hệ thống demo — dữ liệu lưu cục bộ trên trình duyệt</span>
+  </footer>
+</div>
+ 
+<!-- ============ ADMIN LOGIN VIEW ============ -->
+<div data-app-view="admin-login">
+  <div class="login-shell">
+    <div class="login-card">
+      <div class="brand"><div class="brand-mark">A</div><div class="brand-name">AUR<em>ELIA</em></div></div>
+      <p class="hint" style="text-align:center;">Khu vực quản trị · mật khẩu demo: <b class="mono" style="color:var(--brass-bright)">admin123</b></p>
+      <div class="field"><label>Tên đăng nhập</label><input id="loginUser" value="admin"></div>
+      <div class="field"><label>Mật khẩu</label><input id="loginPass" type="password" placeholder="••••••••"></div>
+      <button class="btn btn-brass" id="loginBtn" style="width:100%;justify-content:center;">Đăng nhập</button>
+      <div style="text-align:center;margin-top:18px;">
+        <button class="logout-link" data-goto="guest-home" data-app-goto="guest">← Về trang khách</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ============ ADMIN VIEW ============ -->
+<div data-app-view="admin">
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <div class="brand"><div class="brand-mark">A</div><div class="brand-name">AUR<em>ELIA</em></div></div>
+      <button class="admin-nav-item active" data-admin-goto="dashboard">Tổng quan</button>
+      <button class="admin-nav-item" data-admin-goto="rooms">Quản lý phòng</button>
+      <button class="admin-nav-item" data-admin-goto="bookings">Đặt phòng</button>
+      <button class="admin-nav-item" data-admin-goto="invoices">Hóa đơn</button>
+      <div style="flex:1;"></div>
+      <button class="admin-nav-item" id="adminLogoutBtn">↩ Đăng xuất</button>
+    </aside>
+ 
+    <main class="admin-main">
+      <!-- DASHBOARD -->
+      <section data-admin-panel="dashboard">
+        <div class="admin-header"><h2>Tổng quan</h2></div>
+        <div class="stat-grid" id="dashStats"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mã đặt phòng</th><th>Khách</th><th>Phòng</th><th>Nhận / Trả</th><th>Trạng thái</th></tr></thead>
+            <tbody id="dashRecentBookings"></tbody>
+          </table>
+        </div>
+      </section>
+ 
+      <!-- ROOMS -->
+      <section data-admin-panel="rooms" style="display:none;">
+        <div class="admin-header">
+          <h2>Quản lý phòng</h2>
+          <button class="btn btn-brass btn-sm" id="addRoomBtn">+ Thêm phòng</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Số phòng</th><th>Hạng phòng</th><th>Tầng</th><th>Sức chứa</th><th>Giá / đêm</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody id="roomsTable"></tbody>
+          </table>
+        </div>
+      </section>
+ 
+      <!-- BOOKINGS -->
+      <section data-admin-panel="bookings" style="display:none;">
+        <div class="admin-header"><h2>Đặt phòng</h2></div>
+        <div class="table-toolbar">
+          <select id="bookingFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="cho_xac_nhan">Chờ xác nhận</option>
+            <option value="da_xac_nhan">Đã xác nhận</option>
+            <option value="da_checkin">Đã check-in</option>
+            <option value="da_checkout">Đã check-out</option>
+            <option value="da_huy">Đã hủy</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mã</th><th>Khách</th><th>Phòng</th><th>Nhận</th><th>Trả</th><th>Đêm</th><th>Tạm tính</th><th>Trạng thái</th><th></th></tr></thead>
+            <tbody id="bookingsTable"></tbody>
+          </table>
+        </div>
+      </section>
+ 
+      <!-- INVOICES -->
+      <section data-admin-panel="invoices" style="display:none;">
+        <div class="admin-header"><h2>Hóa đơn</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Số hóa đơn</th><th>Mã đặt phòng</th><th>Khách</th><th>Tổng tiền</th><th>Thanh toán</th><th></th></tr></thead>
+            <tbody id="invoicesTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+ 
+<!-- ============ MODALS ============ -->
+<div id="modalRoot"></div>
+ 
+<script>
+/* ============================================================
+   DATA LAYER — localStorage-backed "database"
+   ============================================================ */
+const DB_KEY = 'aurelia_hotel_db_v1';
+ 
+function seedDB(){
+  return {
+    rooms: [
+      { id:'r1', number:'101', type:'Phòng Tiêu chuẩn', floor:1, capacity:2, price:650000, status:'trong', desc:'Ấm cúng, view sân trong, giường đôi tiêu chuẩn.' },
+      { id:'r2', number:'102', type:'Phòng Tiêu chuẩn', floor:1, capacity:2, price:650000, status:'dang_o', desc:'Ấm cúng, view sân trong, giường đôi tiêu chuẩn.' },
+      { id:'r3', number:'201', type:'Phòng Superior', floor:2, capacity:3, price:950000, status:'trong', desc:'Rộng rãi hơn, ban công riêng, view thành phố.' },
+      { id:'r4', number:'202', type:'Phòng Superior', floor:2, capacity:3, price:950000, status:'trong', desc:'Rộng rãi hơn, ban công riêng, view thành phố.' },
+      { id:'r5', number:'301', type:'Phòng Deluxe', floor:3, capacity:2, price:1350000, status:'bao_tri', desc:'Nội thất cao cấp, bồn tắm riêng, minibar miễn phí.' },
+      { id:'r6', number:'302', type:'Phòng Deluxe', floor:3, capacity:2, price:1350000, status:'trong', desc:'Nội thất cao cấp, bồn tắm riêng, minibar miễn phí.' },
+      { id:'r7', number:'401', type:'Suite', floor:4, capacity:4, price:2200000, status:'trong', desc:'Phòng khách riêng biệt, view toàn cảnh, dịch vụ butler.' },
+    ],
+    bookings: [],
+    invoices: [],
+    bookingSeq: 1000,
+    invoiceSeq: 1,
+  };
+}
+ 
+function loadDB(){
+  const raw = localStorage.getItem(DB_KEY);
+  if(!raw){ const fresh = seedDB(); localStorage.setItem(DB_KEY, JSON.stringify(fresh)); return fresh; }
+  try{ return JSON.parse(raw); } catch(e){ const fresh = seedDB(); localStorage.setItem(DB_KEY, JSON.stringify(fresh)); return fresh; }
+}
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+let DB = loadDB();
+ 
+function fmtVND(n){ return n.toLocaleString('vi-VN') + '₫'; }
+function uid(prefix){ return prefix + Math.random().toString(36).slice(2,8); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function nightsBetween(a,b){ const d1=new Date(a), d2=new Date(b); return Math.max(1, Math.round((d2-d1)/86400000)); }
+ 
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+ 
+const STATUS_LABEL = { trong:'Còn trống', dang_o:'Đang có khách', bao_tri:'Bảo trì' };
+const BOOKING_LABEL = {
+  cho_xac_nhan:{ text:'Chờ xác nhận', tag:'tag-cho' },
+  da_xac_nhan:{ text:'Đã xác nhận', tag:'tag-xacnhan' },
+  da_checkin:{ text:'Đã check-in', tag:'tag-checkin' },
+  da_checkout:{ text:'Đã check-out', tag:'tag-checkout' },
+  da_huy:{ text:'Đã hủy', tag:'tag-huy' },
+};
+ 
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+function openModal(innerHtml){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `<div class="modal-backdrop active" id="activeBackdrop"><div class="modal">${innerHtml}</div></div>`;
+  document.getElementById('activeBackdrop').addEventListener('click', (e)=>{
+    if(e.target.id === 'activeBackdrop') closeModal();
+  });
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML = ''; }
+ 
+/* ============================================================
+   ROUTING — top-level app view (guest / admin-login / admin)
+   ============================================================ */
+function setAppView(view){
+  document.querySelectorAll('[data-app-view]').forEach(el=>{
+    el.classList.toggle('active', el.getAttribute('data-app-view') === view);
+  });
+  window.scrollTo(0,0);
+}
+ 
+document.body.addEventListener('click', (e)=>{
+  const gotoEl = e.target.closest('[data-goto]');
+  if(gotoEl){
+    const sectionId = gotoEl.getAttribute('data-goto');
+    if(sectionId === 'admin-gate'){
+      setAppView(isAdminLoggedIn() ? 'admin' : 'admin-login');
+      if(isAdminLoggedIn()) renderAdmin();
+      return;
+    }
+    if(gotoEl.hasAttribute('data-app-goto')) setAppView(gotoEl.getAttribute('data-app-goto'));
+    document.querySelectorAll('#guestNav button').forEach(b=>b.classList.toggle('active', b === gotoEl));
+    const section = document.getElementById(sectionId);
+    if(section) section.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+});
+ 
+/* ============================================================
+   GUEST — rooms rendering + filters
+   ============================================================ */
+function populateTypeFilter(){
+  const sel = document.getElementById('filterType');
+  const types = [...new Set(DB.rooms.map(r=>r.type))];
+  sel.innerHTML = '<option value="">Tất cả hạng phòng</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+ 
+function renderGuestHome(){
+  document.getElementById('statTotalRooms').textContent = DB.rooms.length;
+  document.getElementById('statAvailRooms').textContent = DB.rooms.filter(r=>r.status==='trong').length;
+  document.getElementById('statRoomTypes').textContent = new Set(DB.rooms.map(r=>r.type)).size;
+}
+ 
+function renderRoomGrid(){
+  const typeVal = document.getElementById('filterType').value;
+  const statusVal = document.getElementById('filterStatus').value;
+  const grid = document.getElementById('roomGrid');
+  const rooms = DB.rooms.filter(r => (!typeVal || r.type===typeVal) && (!statusVal || r.status===statusVal));
+  if(rooms.length === 0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><b>Không tìm thấy phòng</b>Thử điều chỉnh bộ lọc bên trên.</div>`;
+    return;
+  }
+  grid.innerHTML = rooms.map(r => `
+    <div class="room-card">
+      <div class="room-visual" style="background:linear-gradient(135deg, rgba(198,154,84,.16), rgba(37,57,74,.6));">${r.type}</div>
+      <div class="room-body">
+        <div class="room-top">
+          <div>
+            <div class="room-num mono">PHÒNG ${r.number}</div>
+            <div class="room-type">${r.type}</div>
+          </div>
+          <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
+        </div>
+        <div class="room-desc">${r.desc}</div>
+        <div class="room-meta"><span>👤 ${r.capacity} khách</span><span>Tầng ${r.floor}</span></div>
+        <div class="room-foot">
+          <div class="room-price mono">${fmtVND(r.price)}<span> /đêm</span></div>
+          <button class="btn btn-brass btn-sm" ${r.status!=='trong'?'disabled':''} data-book-room="${r.id}">Đặt phòng</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+ 
+document.getElementById('filterType').addEventListener('change', renderRoomGrid);
+document.getElementById('filterStatus').addEventListener('change', renderRoomGrid);
+ 
+document.getElementById('roomGrid').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-book-room]');
+  if(btn) openBookingModal(btn.getAttribute('data-book-room'));
+});
+ 
+/* ============================================================
+   GUEST — booking modal + flow
+   ============================================================ */
+function openBookingModal(roomId){
+  const room = DB.rooms.find(r=>r.id===roomId);
+  if(!room) return;
+  openModal(`
+    <div class="modal-head">
+      <h3>Đặt phòng ${room.number} — ${room.type}</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Ngày nhận phòng</label><input type="date" id="bkCheckin" min="${todayStr()}" value="${todayStr()}"></div>
+        <div class="field"><label>Ngày trả phòng</label><input type="date" id="bkCheckout" min="${todayStr()}"></div>
+      </div>
+      <div class="field"><label>Họ tên khách</label><input id="bkName" placeholder="Nguyễn Văn A"></div>
+      <div class="field-row">
+        <div class="field"><label>Số điện thoại</label><input id="bkPhone" placeholder="09xxxxxxxx"></div>
+        <div class="field"><label>Số khách</label><input type="number" id="bkGuests" min="1" max="${room.capacity}" value="1"></div>
+      </div>
+      <div class="field"><label>Email (không bắt buộc)</label><input id="bkEmail" placeholder="email@vidu.com"></div>
+      <div class="field"><label>Ghi chú (không bắt buộc)</label><textarea id="bkNote" rows="2" placeholder="Yêu cầu thêm..."></textarea></div>
+      <div id="bkTotalBox" class="panel" style="padding:16px 18px;margin-bottom:18px;display:none;">
+        <div class="ledger-row"><span>Số đêm</span><span id="bkNights" class="mono"></span></div>
+        <div class="ledger-row"><span>Tạm tính</span><span id="bkTotal" class="mono"></span></div>
+      </div>
+      <button class="btn btn-brass" id="bkSubmit" style="width:100%;justify-content:center;">Xác nhận đặt phòng</button>
+    </div>
+  `);
+  const recalc = ()=>{
+    const ci = document.getElementById('bkCheckin').value, co = document.getElementById('bkCheckout').value;
+    const box = document.getElementById('bkTotalBox');
+    if(ci && co && co > ci){
+      const n = nightsBetween(ci,co);
+      document.getElementById('bkNights').textContent = n + ' đêm';
+      document.getElementById('bkTotal').textContent = fmtVND(n * room.price);
+      box.style.display = 'block';
+    } else { box.style.display = 'none'; }
+  };
+  document.getElementById('bkCheckin').addEventListener('change', recalc);
+  document.getElementById('bkCheckout').addEventListener('change', recalc);
+  document.getElementById('bkSubmit').addEventListener('click', ()=> submitBooking(room));
+}
+ 
+function submitBooking(room){
+  const checkin = document.getElementById('bkCheckin').value;
+  const checkout = document.getElementById('bkCheckout').value;
+  const name = document.getElementById('bkName').value.trim();
+  const phone = document.getElementById('bkPhone').value.trim();
+  const guests = parseInt(document.getElementById('bkGuests').value || '1');
+  const email = document.getElementById('bkEmail').value.trim();
+  const note = document.getElementById('bkNote').value.trim();
+ 
+  if(!checkin || !checkout || checkout <= checkin){ showToast('Vui lòng chọn ngày nhận/trả hợp lệ'); return; }
+  if(!name){ showToast('Vui lòng nhập họ tên'); return; }
+  if(!phone){ showToast('Vui lòng nhập số điện thoại'); return; }
+  if(guests > room.capacity){ showToast(`Phòng chỉ chứa tối đa ${room.capacity} khách`); return; }
+ 
+  const nights = nightsBetween(checkin, checkout);
+  const total = nights * room.price;
+  DB.bookingSeq += 1;
+  const code = 'BK' + DB.bookingSeq;
+  const booking = {
+    id: uid('bk'), code, roomId: room.id, name, phone, email, guests, note,
+    checkin, checkout, nights, total, status:'cho_xac_nhan', createdAt: new Date().toISOString()
+  };
+  DB.bookings.push(booking);
+  saveDB(DB);
+ 
+  openModal(`
+    <div class="modal-head"><h3>Đặt phòng thành công</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="seal">XÁC<br>NHẬN</div>
+      <div class="code-display">${code}</div>
+      <p class="hint" style="margin-bottom:20px;">Lưu lại mã này để tra cứu tình trạng đặt phòng của bạn.</p>
+      <div class="ledger">
+        <div class="ledger-row"><span>Khách</span><span>${name}</span></div>
+        <div class="ledger-row"><span>Phòng</span><span>${room.number} · ${room.type}</span></div>
+        <div class="ledger-row"><span>Nhận phòng</span><span>${checkin}</span></div>
+        <div class="ledger-row"><span>Trả phòng</span><span>${checkout}</span></div>
+        <div class="ledger-row"><span>Số đêm</span><span>${nights}</span></div>
+        <div class="ledger-row"><span>Tạm tính</span><span>${fmtVND(total)}</span></div>
+        <div class="ledger-row"><span>Trạng thái</span><span>Chờ xác nhận</span></div>
+      </div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:20px;" onclick="closeModal()">Đóng</button>
+    </div>
+  `);
+  renderGuestHome();
+}
+ 
+/* ============================================================
+   GUEST — booking lookup
+   ============================================================ */
+document.getElementById('lookupBtn').addEventListener('click', ()=>{
+  const code = document.getElementById('lookupCode').value.trim().toUpperCase();
+  const phone = document.getElementById('lookupPhone').value.trim();
+  const box = document.getElementById('lookupResult');
+  const bk = DB.bookings.find(b => b.code.toUpperCase() === code && b.phone === phone);
+  if(!bk){
+    box.innerHTML = `<div class="empty-state"><b>Không tìm thấy</b>Kiểm tra lại mã đặt phòng và số điện thoại.</div>`;
+    return;
+  }
+  const room = DB.rooms.find(r=>r.id===bk.roomId);
+  const st = BOOKING_LABEL[bk.status];
+  box.innerHTML = `
+    <div class="ledger">
+      <div class="ledger-row"><span>Mã đặt phòng</span><span>${bk.code}</span></div>
+      <div class="ledger-row"><span>Phòng</span><span>${room ? room.number+' · '+room.type : '—'}</span></div>
+      <div class="ledger-row"><span>Nhận / Trả</span><span>${bk.checkin} → ${bk.checkout}</span></div>
+      <div class="ledger-row"><span>Tạm tính</span><span>${fmtVND(bk.total)}</span></div>
+      <div class="ledger-row"><span>Trạng thái</span><span><span class="tag ${st.tag}">${st.text}</span></span></div>
+    </div>`;
+});
+ 
+/* ============================================================
+   ADMIN — auth
+   ============================================================ */
+const ADMIN_PASS = 'admin123';
+function isAdminLoggedIn(){ return sessionStorage.getItem('aurelia_admin') === '1'; }
+ 
+document.getElementById('loginBtn').addEventListener('click', ()=>{
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if(user === 'admin' && pass === ADMIN_PASS){
+    sessionStorage.setItem('aurelia_admin','1');
+    setAppView('admin');
+    renderAdmin();
+  } else {
+    showToast('Sai tên đăng nhập hoặc mật khẩu');
+  }
+});
+document.getElementById('adminLogoutBtn').addEventListener('click', ()=>{
+  sessionStorage.removeItem('aurelia_admin');
+  setAppView('guest');
+});
+ 
+/* admin sidebar nav */
+document.querySelectorAll('[data-admin-goto]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-admin-goto]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = btn.getAttribute('data-admin-goto');
+    document.querySelectorAll('[data-admin-panel]').forEach(p=>{
+      p.style.display = p.getAttribute('data-admin-panel') === panel ? 'block' : 'none';
+    });
+    renderAdmin();
+  });
+});
+ 
+/* ============================================================
+   ADMIN — render orchestration
+   ============================================================ */
+function renderAdmin(){
+  renderDashboard();
+  renderRoomsTable();
+  renderBookingsTable();
+  renderInvoicesTable();
+}
+ 
+function renderDashboard(){
+  const total = DB.rooms.length;
+  const avail = DB.rooms.filter(r=>r.status==='trong').length;
+  const occ = DB.rooms.filter(r=>r.status==='dang_o').length;
+  const revenue = DB.invoices.filter(i=>i.paid).reduce((s,i)=>s+i.total,0);
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><b>${total}</b><span>Tổng số phòng</span></div>
+    <div class="stat-card"><b>${avail}</b><span>Phòng trống</span></div>
+    <div class="stat-card"><b>${occ}</b><span>Đang có khách</span></div>
+    <div class="stat-card"><b class="mono">${fmtVND(revenue)}</b><span>Doanh thu đã thu</span></div>
+  `;
+  const recent = [...DB.bookings].sort((a,b)=> b.createdAt.localeCompare(a.createdAt)).slice(0,6);
+  document.getElementById('dashRecentBookings').innerHTML = recent.length ? recent.map(b=>{
+    const room = DB.rooms.find(r=>r.id===b.roomId);
+    const st = BOOKING_LABEL[b.status];
+    return `<tr><td class="mono">${b.code}</td><td>${b.name}</td><td>${room?room.number:'—'}</td><td>${b.checkin} → ${b.checkout}</td><td><span class="tag ${st.tag}">${st.text}</span></td></tr>`;
+  }).join('') : `<tr><td colspan="5"><div class="empty-state"><b>Chưa có đặt phòng</b>Các đặt phòng mới sẽ hiện ở đây.</div></td></tr>`;
+}
+ 
+/* ---------- rooms CRUD ---------- */
+function renderRoomsTable(){
+  const body = document.getElementById('roomsTable');
+  body.innerHTML = DB.rooms.length ? DB.rooms.map(r=>`
+    <tr>
+      <td class="mono">${r.number}</td>
+      <td>${r.type}</td>
+      <td>${r.floor}</td>
+      <td>${r.capacity}</td>
+      <td class="mono">${fmtVND(r.price)}</td>
+      <td>
+        <select class="icon-btn" data-room-status="${r.id}">
+          <option value="trong" ${r.status==='trong'?'selected':''}>Còn trống</option>
+          <option value="dang_o" ${r.status==='dang_o'?'selected':''}>Đang có khách</option>
+          <option value="bao_tri" ${r.status==='bao_tri'?'selected':''}>Bảo trì</option>
+        </select>
+      </td>
+      <td class="row-actions">
+        <button class="icon-btn" data-edit-room="${r.id}">Sửa</button>
+        <button class="icon-btn" data-del-room="${r.id}" style="color:var(--rose);border-color:rgba(192,114,104,.4);">Xóa</button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="7"><div class="empty-state"><b>Chưa có phòng nào</b>Nhấn "Thêm phòng" để bắt đầu.</div></td></tr>`;
+}
+ 
+document.getElementById('roomsTable').addEventListener('change', (e)=>{
+  const sel = e.target.closest('[data-room-status]');
+  if(!sel) return;
+  const room = DB.rooms.find(r=>r.id===sel.getAttribute('data-room-status'));
+  room.status = sel.value;
+  saveDB(DB); renderRoomsTable(); renderDashboard(); populateTypeFilter(); renderRoomGrid(); renderGuestHome();
+  showToast('Đã cập nhật trạng thái phòng');
+});
+ 
+document.getElementById('roomsTable').addEventListener('click', (e)=>{
+  const editBtn = e.target.closest('[data-edit-room]');
+  const delBtn = e.target.closest('[data-del-room]');
+  if(editBtn) openRoomModal(editBtn.getAttribute('data-edit-room'));
+  if(delBtn){
+    const room = DB.rooms.find(r=>r.id===delBtn.getAttribute('data-del-room'));
+    const inUse = DB.bookings.some(b=>b.roomId===room.id && !['da_checkout','da_huy'].includes(b.status));
+    if(inUse){ showToast('Không thể xóa — phòng đang có đặt phòng hoạt động'); return; }
+    if(confirm(`Xóa phòng ${room.number}?`)){
+      DB.rooms = DB.rooms.filter(r=>r.id!==room.id);
+      saveDB(DB); renderRoomsTable(); renderDashboard(); populateTypeFilter(); renderRoomGrid(); renderGuestHome();
+      showToast('Đã xóa phòng');
+    }
+  }
+});
+ 
+document.getElementById('addRoomBtn').addEventListener('click', ()=> openRoomModal(null));
+ 
+function openRoomModal(roomId){
+  const room = roomId ? DB.rooms.find(r=>r.id===roomId) : null;
+  openModal(`
+    <div class="modal-head"><h3>${room?'Sửa phòng':'Thêm phòng mới'}</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Số phòng</label><input id="rmNumber" value="${room?room.number:''}" placeholder="VD: 501"></div>
+        <div class="field"><label>Tầng</label><input id="rmFloor" type="number" value="${room?room.floor:1}"></div>
+      </div>
+      <div class="field"><label>Hạng phòng</label><input id="rmType" value="${room?room.type:''}" placeholder="VD: Phòng Superior"></div>
+      <div class="field-row">
+        <div class="field"><label>Sức chứa (khách)</label><input id="rmCapacity" type="number" min="1" value="${room?room.capacity:2}"></div>
+        <div class="field"><label>Giá / đêm (VNĐ)</label><input id="rmPrice" type="number" min="0" step="10000" value="${room?room.price:500000}"></div>
+      </div>
+      <div class="field"><label>Mô tả</label><textarea id="rmDesc" rows="2">${room?room.desc:''}</textarea></div>
+      <div class="field"><label>Trạng thái</label>
+        <select id="rmStatus">
+          <option value="trong" ${room&&room.status==='trong'?'selected':''}>Còn trống</option>
+          <option value="dang_o" ${room&&room.status==='dang_o'?'selected':''}>Đang có khách</option>
+          <option value="bao_tri" ${room&&room.status==='bao_tri'?'selected':''}>Bảo trì</option>
+        </select>
+      </div>
+      <button class="btn btn-brass" id="rmSave" style="width:100%;justify-content:center;">${room?'Lưu thay đổi':'Thêm phòng'}</button>
+    </div>
+  `);
+  document.getElementById('rmSave').addEventListener('click', ()=>{
+    const number = document.getElementById('rmNumber').value.trim();
+    const type = document.getElementById('rmType').value.trim();
+    if(!number || !type){ showToast('Vui lòng nhập số phòng và hạng phòng'); return; }
+    const data = {
+      number, type,
+      floor: parseInt(document.getElementById('rmFloor').value||'1'),
+      capacity: parseInt(document.getElementById('rmCapacity').value||'1'),
+      price: parseInt(document.getElementById('rmPrice').value||'0'),
+      desc: document.getElementById('rmDesc').value.trim(),
+      status: document.getElementById('rmStatus').value,
+    };
+    if(room){ Object.assign(room, data); }
+    else { DB.rooms.push({ id: uid('rm'), ...data }); }
+    saveDB(DB); closeModal();
+    renderRoomsTable(); renderDashboard(); populateTypeFilter(); renderRoomGrid(); renderGuestHome();
+    showToast(room?'Đã lưu thay đổi':'Đã thêm phòng mới');
+  });
+}
+ 
+/* ---------- bookings management ---------- */
+function renderBookingsTable(){
+  const filter = document.getElementById('bookingFilter').value;
+  const body = document.getElementById('bookingsTable');
+  const list = DB.bookings.filter(b=> !filter || b.status===filter)
+    .sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  body.innerHTML = list.length ? list.map(b=>{
+    const room = DB.rooms.find(r=>r.id===b.roomId);
+    const st = BOOKING_LABEL[b.status];
+    const actions = [];
+    if(b.status==='cho_xac_nhan'){
+      actions.push(`<button class="icon-btn" data-bk-action="confirm" data-bk-id="${b.id}">Xác nhận</button>`);
+      actions.push(`<button class="icon-btn" data-bk-action="cancel" data-bk-id="${b.id}" style="color:var(--rose);">Hủy</button>`);
+    }
+    if(b.status==='da_xac_nhan'){
+      actions.push(`<button class="icon-btn" data-bk-action="checkin" data-bk-id="${b.id}">Check-in</button>`);
+      actions.push(`<button class="icon-btn" data-bk-action="cancel" data-bk-id="${b.id}" style="color:var(--rose);">Hủy</button>`);
+    }
+    if(b.status==='da_checkin'){
+      actions.push(`<button class="icon-btn" data-bk-action="checkout" data-bk-id="${b.id}">Check-out</button>`);
+    }
+    if(b.status==='da_checkout'){
+      const hasInvoice = DB.invoices.some(i=>i.bookingId===b.id);
+      actions.push(hasInvoice
+        ? `<span class="tag tag-checkout">Đã xuất hóa đơn</span>`
+        : `<button class="icon-btn" data-bk-action="invoice" data-bk-id="${b.id}">Xuất hóa đơn</button>`);
+    }
+    return `<tr>
+      <td class="mono">${b.code}</td>
+      <td>${b.name}<br><span style="color:var(--muted);font-size:11.5px;">${b.phone}</span></td>
+      <td>${room?room.number:'—'}</td>
+      <td>${b.checkin}</td>
+      <td>${b.checkout}</td>
+      <td>${b.nights}</td>
+      <td class="mono">${fmtVND(b.total)}</td>
+      <td><span class="tag ${st.tag}">${st.text}</span></td>
+      <td class="row-actions">${actions.join('')}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9"><div class="empty-state"><b>Không có đặt phòng</b>Chưa có đặt phòng nào khớp bộ lọc.</div></td></tr>`;
+}
+ 
+document.getElementById('bookingFilter').addEventListener('change', renderBookingsTable);
+ 
+document.getElementById('bookingsTable').addEventListener('click', (e)=>{
+  const btn = e.target.closest('[data-bk-action]');
+  if(!btn) return;
+  const action = btn.getAttribute('data-bk-action');
+  const booking = DB.bookings.find(b=>b.id===btn.getAttribute('data-bk-id'));
+  const room = DB.rooms.find(r=>r.id===booking.roomId);
+ 
+  if(action==='confirm'){ booking.status='da_xac_nhan'; showToast('Đã xác nhận đặt phòng'); }
+  if(action==='cancel'){ booking.status='da_huy'; showToast('Đã hủy đặt phòng'); }
+  if(action==='checkin'){ booking.status='da_checkin'; if(room) room.status='dang_o'; showToast('Đã check-in'); }
+  if(action==='checkout'){ booking.status='da_checkout'; if(room) room.status='trong'; showToast('Đã check-out'); }
+  if(action==='invoice'){ openInvoiceModal(booking); return; }
+ 
+  saveDB(DB);
+  renderBookingsTable(); renderRoomsTable(); renderDashboard(); renderRoomGrid(); renderGuestHome();
+});
+ 
+/* ---------- invoices ---------- */
+function openInvoiceModal(booking){
+  openModal(`
+    <div class="modal-head"><h3>Xuất hóa đơn — ${booking.code}</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="ledger" style="margin-bottom:18px;">
+        <div class="ledger-row"><span>Khách</span><span>${booking.name}</span></div>
+        <div class="ledger-row"><span>Số đêm</span><span>${booking.nights}</span></div>
+        <div class="ledger-row"><span>Tiền phòng</span><span>${fmtVND(booking.total)}</span></div>
+      </div>
+      <div class="field"><label>Dịch vụ thêm (không bắt buộc)</label></div>
+      <div id="svcList"></div>
+      <button type="button" class="btn btn-ghost btn-sm" id="addSvcBtn" style="margin-bottom:18px;">+ Thêm dịch vụ</button>
+      <div class="panel" style="padding:16px 18px;margin-bottom:18px;">
+        <div class="ledger-row"><span>Tổng cộng</span><span id="invTotal" class="mono">${fmtVND(booking.total)}</span></div>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="invPaid" style="width:auto;margin-right:8px;">Đánh dấu đã thanh toán</label>
+      </div>
+      <button class="btn btn-brass" id="invSave" style="width:100%;justify-content:center;">Tạo hóa đơn</button>
+    </div>
+  `);
+  const svcList = document.getElementById('svcList');
+  function recalcInv(){
+    let sum = booking.total;
+    svcList.querySelectorAll('[data-svc-row]').forEach(row=>{
+      sum += parseInt(row.querySelector('[data-svc-price]').value || '0');
+    });
+    document.getElementById('invTotal').textContent = fmtVND(sum);
+  }
+  document.getElementById('addSvcBtn').addEventListener('click', ()=>{
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.setAttribute('data-svc-row','1');
+    row.style.marginBottom = '10px';
+    row.innerHTML = `
+      <input data-svc-name placeholder="Tên dịch vụ (VD: Giặt ủi)">
+      <input data-svc-price type="number" min="0" step="1000" placeholder="Giá (VNĐ)" value="0">
+    `;
+    svcList.appendChild(row);
+    row.querySelector('[data-svc-price]').addEventListener('input', recalcInv);
+  });
+  document.getElementById('invSave').addEventListener('click', ()=>{
+    const services = [...svcList.querySelectorAll('[data-svc-row]')].map(row=>({
+      name: row.querySelector('[data-svc-name]').value.trim() || 'Dịch vụ',
+      price: parseInt(row.querySelector('[data-svc-price]').value || '0')
+    }));
+    const total = booking.total + services.reduce((s,x)=>s+x.price,0);
+    DB.invoiceSeq += 1;
+    const invoice = {
+      id: uid('inv'), number: 'HD' + String(DB.invoiceSeq).padStart(4,'0'),
+      bookingId: booking.id, guestName: booking.name, roomCharge: booking.total,
+      services, total, paid: document.getElementById('invPaid').checked,
+      createdAt: new Date().toISOString()
+    };
+    DB.invoices.push(invoice);
+    saveDB(DB); closeModal();
+    renderInvoicesTable(); renderBookingsTable(); renderDashboard();
+    showToast('Đã tạo hóa đơn ' + invoice.number);
+  });
+}
+ 
+function renderInvoicesTable(){
+  const body = document.getElementById('invoicesTable');
+  const list = [...DB.invoices].sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  body.innerHTML = list.length ? list.map(inv=>`
+    <tr>
+      <td class="mono">${inv.number}</td>
+      <td class="mono">${DB.bookings.find(b=>b.id===inv.bookingId)?.code || '—'}</td>
+      <td>${inv.guestName}</td>
+      <td class="mono">${fmtVND(inv.total)}</td>
+      <td><span class="tag ${inv.paid?'tag-paid':'tag-unpaid'}">${inv.paid?'Đã thanh toán':'Chưa thanh toán'}</span></td>
+      <td class="row-actions">
+        <button class="icon-btn" data-view-inv="${inv.id}">Xem</button>
+        ${!inv.paid ? `<button class="icon-btn" data-pay-inv="${inv.id}">Đánh dấu đã trả</button>` : ''}
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6"><div class="empty-state"><b>Chưa có hóa đơn</b>Hóa đơn được tạo sau khi khách check-out.</div></td></tr>`;
+}
+ 
+document.getElementById('invoicesTable').addEventListener('click', (e)=>{
+  const payBtn = e.target.closest('[data-pay-inv]');
+  const viewBtn = e.target.closest('[data-view-inv]');
+  if(payBtn){
+    const inv = DB.invoices.find(i=>i.id===payBtn.getAttribute('data-pay-inv'));
+    inv.paid = true; saveDB(DB); renderInvoicesTable(); renderDashboard();
+    showToast('Đã đánh dấu thanh toán');
+  }
+  if(viewBtn){
+    const inv = DB.invoices.find(i=>i.id===viewBtn.getAttribute('data-view-inv'));
+    openModal(`
+      <div class="modal-head"><h3>Hóa đơn ${inv.number}</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body">
+        <div class="ledger">
+          <div class="ledger-row"><span>Khách</span><span>${inv.guestName}</span></div>
+          <div class="ledger-row"><span>Tiền phòng</span><span>${fmtVND(inv.roomCharge)}</span></div>
+          ${inv.services.map(s=>`<div class="ledger-row"><span>${s.name}</span><span>${fmtVND(s.price)}</span></div>`).join('')}
+          <div class="ledger-row"><span>Tổng cộng</span><span>${fmtVND(inv.total)}</span></div>
+          <div class="ledger-row"><span>Trạng thái</span><span>${inv.paid?'Đã thanh toán':'Chưa thanh toán'}</span></div>
+        </div>
+      </div>
+    `);
+  }
+});
+ 
+/* ============================================================
+   INIT
+   ============================================================ */
+populateTypeFilter();
+renderGuestHome();
+renderRoomGrid();
+setAppView('guest');
+</script>
+</body>
+</html>
+ 
